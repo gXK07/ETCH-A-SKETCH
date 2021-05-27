@@ -1,86 +1,79 @@
-    let arrayGrid = new Array(256);
-    let currentSizeGrid = arrayGrid.length;
-    let reset = document.querySelector("#reset");
+let arrayCases = new Array;
+let mode = "color";
+let currentCasesInLine = 0
 
-    function createGrid(nbCases, nbCasesInLine){
-        for(i = 0; i < nbCases.length; i++){
-            //create divs inside the array
-            nbCases[i] = document.createElement('div');
-            //place the divs inside the container div
-            container.appendChild(nbCases[i])
-            //make a square grid 
-            document.querySelector('#container').style.cssText = `display : grid;
-                    grid-template : repeat(${nbCasesInLine}, 1fr) /
-                        repeat(${nbCasesInLine}, 1fr) ;`;
-            //round the corners
-            /*
-            if (i===0){
-                nbCases[i].classList.add("cornerTopLeft");
-            }
-            if (i=== nbCases.length-1){
-                nbCases[i].classList.add("cornerbottomRight");
-            }
-            if (i === nbCases.length-nbCasesInLine){
-                nbCases[i].classList.add("cornerbottomLeft");
-            }
-            if (i === nbCasesInLine-1){
-                nbCases[i].classList.add("cornerTopRight");
-            }
-            */
-            }
-            // add event for colorise the cases
-            nbCases.forEach(x => x.addEventListener('mouseover', addHovered));
-            currentSizeGrid = nbCases.length;
-            arrayGrid = nbCases;
-            console.log(currentSizeGrid);
+let blackShade = new Array;
+
+function hovered(e){
+    if(mode === "color"){
+    let randomColor = [Math.floor(Math.random()*255), Math.floor(Math.random()*255), Math.floor(Math.random()*255), 0.5];
+    e.target.style.cssText = `background-color : rgba(${randomColor})`;
     }
-    
-    
-
-    function addHovered(e){
-        e.target.classList.add("hovered");
+    if(mode === "blackShade"){
+        let div = e.path[0];
+        let id = div.getAttribute('id');
+        let caseNumber = parseInt(id, 10);
+        console.log(caseNumber);
+        blackShade[caseNumber] = blackShade[caseNumber] + 1;
+        e.target.style.cssText = `background-color : rgba(0, 0, 0, ${blackShade[caseNumber]/10})`;
     }
-    
-    // redifined the number of square in the grid (lenght of the array "cases")
-    function reSize(string){
-        let squareWanted = Math.floor(Number(string));
-        if (squareWanted > 100 || squareWanted < 1){
-            squareWanted = prompt(
-                "Please enter a number between 1 and 100. How many square on each line do you want ?"
-                )
-        }
-        else if (squareWanted === NaN){
-            squareWanted = prompt(
-                "Please, enter a real number. How many square on each line do you want ? "
-                )
-        }
-        else if(squareWanted > 0 && squareWanted <= 100){
-            newCases = new Array(Math.pow(squareWanted, 2)); 
-            createGrid(newCases, squareWanted);
-        }
-        else{
-            alert("something went wrong");
-            return 0;
-        }
+}
+
+function getNumber(string){  
+    console.log(typeof(string)); 
+    let id = ""
+    for(i=0; i<string.length; i++){
+        console.log(string.charAt(i));
+        console.log(i);
+            if(string.charAt(i) >= '0' && string.charAt(i) <= '9'){
+                id = id + string.charAt(i);
+            }
     }
-    /* 
-    Remove the class "hovered" from all the div, 
-    and create another grid with the number of cases wanted
-    */
-    function doReset(){
-        for(i=0; i<currentSizeGrid; i++){
-            arrayGrid[i].classList.remove("hovered");
-        }
-        /*
-        for(i=0; i<cases.length; i++){
-            cases[i].parentNode.removeChild(nbCases[i]);
-        }
-        */
-            let squareWanted = prompt("How many square do you want ?");
-            reSize(squareWanted);
+    return(id);
+}
 
+function createGrid(nbCases, nbCasesLines, chosenMode){
+    mode = chosenMode;
+    arrayCases = new Array(nbCases);
+    blackShade = new Array(arrayCases.length);
+    for(i = 0; i< arrayCases.length; i++){
+        arrayCases[i] = document.createElement('div');
+        arrayCases[i].id = i;
+        blackShade[i] = 0;
+        container.appendChild(arrayCases[i]);
     }
+    container.style.cssText = `grid-template : repeat(${nbCasesLines}, 1fr) / repeat(${nbCasesLines}, 1fr)`;
+    arrayCases.forEach(cases => cases.addEventListener('mouseover', hovered));
+    currentCasesInLine = nbCasesLines;
+}
 
+function suppGrid(){
+    for(i=0; i<arrayCases.length; i++){
+        container.removeChild(arrayCases[i]);
+    }
+}
 
-    createGrid(arrayGrid, 16);
-    reset.addEventListener('click', doReset);
+function doReset(){
+    suppGrid();
+    let squareWanted = prompt("how many square do you want ?");
+    if(squareWanted < 1 || squareWanted > 100){
+        squareWanted = prompt('between 1 and 100. How many square do you want ?');
+    }
+    else if(squareWanted > 0 && squareWanted <= 100){
+        createGrid(Math.pow(squareWanted, 2), squareWanted, mode);
+    }
+    else{
+        alert("something went wrong");
+        createGrid(256,16, mode);
+        return;
+    }
+}
+ function doClear(){
+     suppGrid();
+     createGrid(Math.pow(currentCasesInLine, 2), currentCasesInLine, mode);
+ }
+createGrid(256, 16, mode);
+reset.addEventListener("click", doReset);
+clear.addEventListener("click", doClear);
+blackshade.addEventListener("click", () => {mode = "blackShade"; doClear()})
+color.addEventListener("click", () => {mode = "color"; doClear(), console.log(mode);})
